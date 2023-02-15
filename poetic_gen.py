@@ -28,6 +28,7 @@ index_to_char = dict((i, c) for i, c in enumerate(characters))
 # the next character. "How are yo" -> 'u'.
 SEQ_LENGTH = 40
 STEP_SIZE = 3
+'''
 sentences = []  # empty list of sentences
 next_characters = []  # empty list of next characters
 # we are getting training examples with sentences and the next correct letter. For example, if SEQ_LENGTH is 5 then we
@@ -45,10 +46,11 @@ for i, sentence in enumerate(sentences):
     for t, character in enumerate(sentence):
         x[i, t, char_to_index[character]] = 1  # for sentence #i, position #t, and character #index set true/1
     y[i, char_to_index[next_characters[i]]] = 1  # for sentence #i, the correct next character is character #index
-
+'''
 ###################################################################
-##                   Build the neural network                    ##
+##             Build the neural network model                    ##
 ###################################################################
+'''
 # Train the model
 model = Sequential()
 model.add(LSTM(128, input_shape=(SEQ_LENGTH, len(characters))))  # Long Short Term Memory, LSTM(# of neurons, data_shape)
@@ -58,4 +60,52 @@ model.add(Activation('softmax'))
 model.compile(loss='categorical_crossentropy', optimizer=RMSprop(lr=0.01))
 model.fit(x, y, batch_size=256, epochs=4)
 model.save('poeticgen.model')
+'''
+model = tf.keras.models.load_model('poeticgen.model')
+
+
+# From keras tutorial helper function
+def sample(preds, temperature=1.0):
+    preds = np.asarray(preds).astype('float64')
+    preds = np.log(preds) / temperature
+    exp_preds = np.exp(preds)
+    preds = exp_preds/np.sum(exp_preds)
+    probas = np.random.multinomial(1, preds, 1)
+    return np.argmax(probas)
+
+
+# if you want a text that is completely generated, you have to cut off the first 40 characters
+def generate_text(length, temperature):
+    start_index = random.randint(0, len(text) - SEQ_LENGTH - 1)
+    generated = ''
+    sentence = text[start_index: start_index + SEQ_LENGTH]
+    generated += sentence
+    for i in range(length):
+        x = np.zeros((1, SEQ_LENGTH, len(characters)))
+        for t, character in enumerate(sentence):
+            x[0, t, char_to_index[character]] = 1
+        predictions = model.predict(x, verbose=0)[0]
+        next_index = sample(predictions, temperature)
+        next_character = index_to_char[next_index]
+        generated += next_character
+        sentence = sentence[1:] + next_character
+    return generated
+
+
+print('-------------0.2----------------')
+print(generate_text(300, 0.2))
+print('-------------0.4----------------')
+print(generate_text(300, 0.4))
+print('-------------0.8----------------')
+print(generate_text(300, 0.8))
+print('-------------1.0----------------')
+print(generate_text(300, 1.0))
+print('-------------1.2----------------')
+print(generate_text(300, 1.2))
+print('-------------1.4----------------')
+print(generate_text(300, 1.4))
+print('-------------1.6----------------')
+print(generate_text(300, 1.6))
+print('-------------1.8----------------')
+print(generate_text(300, 1.8))
 
