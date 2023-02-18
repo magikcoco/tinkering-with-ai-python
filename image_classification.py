@@ -19,6 +19,7 @@ training_images, testing_images = training_images / 255, testing_images / 255
 # in the current training and testing datasets, labels are just numbers
 # need to assign names to the labels with this list, order is important
 class_names = ['Plane', 'Car', 'Bird', 'Cat', 'Deer', 'Dog', 'Frog', 'Horse', 'Ship', 'Truck']
+'''
 # Visualize the data
 for i in range(16):
     # a 4x4 grid, and choose a space in the grid to put the next image
@@ -30,7 +31,7 @@ for i in range(16):
     plt.imshow(training_images[i], cmap=plt.cm.binary)
     plt.xlabel(class_names[training_labels[i][0]])
 plt.show()
-
+'''
 ###################################################################
 ##               Building and Training the model                 ##
 ###################################################################
@@ -40,7 +41,6 @@ training_images = training_images[:20000]
 training_labels = training_labels[:20000]
 testing_images = testing_images[:4000]
 testing_labels = testing_labels[:4000]
-'''
 # Building the model
 model = models.Sequential()
 # Convolutional layers filter for features in an image
@@ -61,4 +61,14 @@ model.fit(training_images, training_labels, epochs=10, validation_data=(testing_
 loss, accuracy = model.evaluate(testing_images, testing_labels)
 print(f"Loss = {loss}\nAccuracy = {accuracy}")
 model.save("imageclassifier.model")
+'''
+# works well with obvious examples
+model = models.load_model('imageclassifier.model')
+img = cv.imread('resources/imageclassifier/car.jpg')
+img = cv.cvtColor(img, cv.COLOR_BGR2RGB)
+plt.imshow(img, cmap=plt.cm.binary)
+prediction = model.predict(np.array([img]) / 255)
+index = np.argmax(prediction)
+print(f'Prediction is {class_names[index]}')
+plt.show()
 
